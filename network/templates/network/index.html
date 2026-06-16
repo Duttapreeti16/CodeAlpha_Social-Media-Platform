@@ -1,0 +1,117 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+<div class="page-grid">
+    <section class="main-column">
+        <div class="feed-header">
+            <h2>Feed</h2>
+            <p class="feed-subtitle">Stay connected with new posts, likes, and comments from community members.</p>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="glass-card create-post">
+            <h3>Create a post</h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ post_form.content }}
+                </div>
+                <div class="form-group">
+                    {{ post_form.image }}
+                </div>
+                <button type="submit" class="btn btn-primary">Post</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="posts-list">
+            {% for post in posts %}
+            <div class="glass-card post">
+                <div class="post-header">
+                    <a href="{% url 'profile' post.author.username %}" class="post-author">{{ post.author.username }}</a>
+                    <span class="post-date">{{ post.created_at|date:"M d, Y h:i A" }}</span>
+                </div>
+                <div class="post-content">{{ post.content }}</div>
+                
+                {% if post.image %}
+                <div class="post-image">
+                    <img src="{{ post.image.url }}" alt="Post image">
+                </div>
+                {% endif %}
+
+                <div class="post-actions">
+                    {% if user.is_authenticated %}
+                        <button class="action-btn like-btn {% if post.id in liked_post_ids %}liked{% endif %}" data-post="{{ post.id }}">
+                            <span class="heart-icon">{% if post.id in liked_post_ids %}❤️{% else %}🤍{% endif %}</span>
+                            <span class="like-count">{{ post.likes.count }}</span>
+                        </button>
+                    {% else %}
+                        <span class="action-btn">❤️ <span class="like-count">{{ post.likes.count }}</span></span>
+                    {% endif %}
+                    <span class="action-btn comment-count">💬 {{ post.comments.count }} Comments</span>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="comments-section">
+                    <form action="{% url 'add_comment' post.id %}" method="POST" class="comment-form">
+                        {% csrf_token %}
+                        <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+                        <button type="submit" class="btn btn-primary">Reply</button>
+                    </form>
+                    
+                    <div class="comments-list">
+                        {% for comment in post.comments.all|slice:":3" %}
+                        <div class="comment">
+                            <div class="comment-author">{{ comment.author.username }}</div>
+                            <div class="comment-content">{{ comment.content }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="glass-card empty-state">
+                <p>No posts available yet. Ask your friends to share their first updates!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <aside class="sidebar">
+        <div class="glass-card sidebar-card">
+            <div class="sidebar-header">
+                <h3>Suggested accounts</h3>
+                <span class="sidebar-note">Follow to personalize your feed.</span>
+            </div>
+            <div class="suggested-users">
+                {% for suggested in suggested_users %}
+                <div class="suggested-user-card">
+                    <a href="{% url 'profile' suggested.username %}" class="suggested-user-link">
+                        <div class="avatar">{{ suggested.username|slice:":1"|upper }}</div>
+                        <div class="suggested-details">
+                            <div class="username">{{ suggested.username }}</div>
+                            <div class="bio">{{ suggested.bio|default:"Creative storyteller" }}</div>
+                        </div>
+                    </a>
+                    {% if user.is_authenticated and suggested != request.user %}
+                    <button class="btn {% if suggested.username in following_usernames %}btn-outline{% else %}btn-primary{% endif %} follow-btn sidebar-follow-btn" data-user="{{ suggested.username }}">
+                        {% if suggested.username in following_usernames %}Unfollow{% else %}Follow{% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="glass-card sidebar-card highlight-card">
+            <h3>More interactivity</h3>
+            <ul class="feature-list">
+                <li>Like posts instantly with animation.</li>
+                <li>Comment from anywhere on the feed.</li>
+                <li>Explore other users and their profiles.</li>
+            </ul>
+        </div>
+    </aside>
+</div>
+{% endblock %}

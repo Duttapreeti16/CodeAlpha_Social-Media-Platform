@@ -1,0 +1,67 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+<div class="glass-card profile-header">
+    <h2 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ profile_user.username }}</h2>
+    {% if profile_user.bio %}
+        <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">{{ profile_user.bio }}</p>
+    {% endif %}
+    
+    <div class="profile-stats">
+        <div class="stat-item">
+            <span class="stat-value" id="followers-count">{{ followers_count }}</span>
+            <span class="stat-label">Followers</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ following_count }}</span>
+            <span class="stat-label">Following</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ posts.count }}</span>
+            <span class="stat-label">Posts</span>
+        </div>
+    </div>
+
+    {% if user.is_authenticated and user != profile_user %}
+        <button class="btn {% if is_following %}btn-outline{% else %}btn-primary{% endif %} follow-btn" data-user="{{ profile_user.username }}">
+            {% if is_following %}Unfollow{% else %}Follow{% endif %}
+        </button>
+    {% endif %}
+</div>
+
+<h3 style="margin: 2rem 0 1rem; font-weight: 600;">Posts</h3>
+
+<div class="posts-list">
+    {% for post in posts %}
+    <div class="glass-card post">
+        <div class="post-header">
+            <span class="post-author">{{ post.author.username }}</span>
+            <span class="post-date">{{ post.created_at|date:"M d, Y h:i A" }}</span>
+        </div>
+        <div class="post-content">{{ post.content }}</div>
+        
+        {% if post.image %}
+        <div class="post-image" style="margin-bottom: 1rem;">
+            <img src="{{ post.image.url }}" alt="Post image" style="max-width: 100%; border-radius: 8px;">
+        </div>
+        {% endif %}
+
+        <div class="post-actions">
+            {% if user.is_authenticated %}
+                <button class="action-btn like-btn {% if post.id in liked_post_ids %}liked{% endif %}" data-post="{{ post.id }}">
+                    <span class="heart-icon">{% if post.id in liked_post_ids %}❤️{% else %}🤍{% endif %}</span>
+                    <span class="like-count">{{ post.likes.count }}</span>
+                </button>
+            {% else %}
+                <span class="action-btn">❤️ <span class="like-count">{{ post.likes.count }}</span></span>
+            {% endif %}
+            <span class="action-btn">💬 {{ post.comments.count }} Comments</span>
+        </div>
+    </div>
+    {% empty %}
+    <div class="glass-card" style="text-align: center; color: var(--text-secondary);">
+        <p>No posts yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
