@@ -122,3 +122,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = 'network.User'
 LOGIN_URL = 'login'
+import os
+
+STATIC_URL = '/static/'
+
+# Add these lines to tell Django where to collect static files for deployment
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'network/static'),
+]
