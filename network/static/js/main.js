@@ -208,7 +208,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function showToast(message) {
     let toast = document.querySelector('.toast-message');
     if (!toast) {
         toast = document.createElement('div');
